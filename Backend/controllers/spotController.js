@@ -1,34 +1,60 @@
+const asyncHandler = require("express-async-handler");
+const Spot = require("../models/goalModel");
+
 //@desc Get Goals
 //@method GET
 //@endpoint /api/spots
-const getGoals = (req, res) => {
-  res.status(200).json({ message: "Get Spots" });
-};
+const getGoals = asyncHandler(async (req, res) => {
+  const spots = await Spot.find();
+  res.status(200).json(spots);
+});
 
 //@desc Set Goal
 //@method POST
 //@endpoint /api/spots
-const setGoal = (req, res) => {
-  if (!req.body.text) {
+const setGoal = asyncHandler(async (req, res) => {
+  if (!req.body.location) {
     res.status(400);
     throw new Error("Please add spots");
   }
-  res.status(200).json({ message: "Set Spots" });
-};
+
+  const spot = await Spot.create({
+    location: req.body.location,
+  });
+
+  res.status(200).json(spot);
+});
 
 //@desc Update Goal
 //@method PUT
 //@endpoint /api/spots/:id
-const updateGoal = (req, res) => {
-  res.status(200).json({ message: `Update Spot ${req.params.id} ` });
-};
+const updateGoal = asyncHandler(async (req, res) => {
+  const spot = await Spot.findById(req.params.id);
+  if (!spot) {
+    res.status(400);
+    throw new Error("Goal not found");
+  }
+
+  const updatedGoal = await Spot.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
+  res.status(200).json(updatedGoal);
+});
 
 //@desc Delete Goal
 //@method DELETE
 //@endpoint /api/spots/:id
-const deleteGoal = (req, res) => {
-  res.status(200).json({ message: `Delete Spot ${req.params.id}` });
-};
+const deleteGoal = asyncHandler(async (req, res) => {
+  const spot = await Spot.findById(req.params.id);
+  if (!spot) {
+    res.status(400);
+    throw new Error("Goal not found");
+  }
+
+  await spot.remove();
+
+  res.status(200).json({ id: req.params.id });
+});
 
 module.exports = {
   getGoals,
