@@ -12,6 +12,7 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/api/spots", require("./routes/spotRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
 app.use(errorHandler);
 
 app.listen(port, () => console.log(`server is running on port ${port}`));

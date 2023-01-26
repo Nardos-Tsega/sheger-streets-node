@@ -1,11 +1,12 @@
 const asyncHandler = require("express-async-handler");
-const Spot = require("../models/goalModel");
+const Spot = require("../models/spotModel");
+const User = require("../models/userModel");
 
 //@desc Get Goals
 //@method GET
 //@endpoint /api/spots
 const getGoals = asyncHandler(async (req, res) => {
-  const spots = await Spot.find();
+  const spots = await Spot.find({ user: req.user.id });
   res.status(200).json(spots);
 });
 
@@ -20,6 +21,7 @@ const setGoal = asyncHandler(async (req, res) => {
 
   const spot = await Spot.create({
     location: req.body.location,
+    user: req.user.id,
   });
 
   res.status(200).json(spot);
@@ -33,6 +35,18 @@ const updateGoal = asyncHandler(async (req, res) => {
   if (!spot) {
     res.status(400);
     throw new Error("Goal not found");
+  }
+
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    res.status(401);
+    throw new Error("User not found");
+  }
+
+  if (goal.user.toString() !== user.id) {
+    res.status(401);
+    throw new Error("User not matching");
   }
 
   const updatedGoal = await Spot.findByIdAndUpdate(req.params.id, req.body, {
@@ -49,6 +63,18 @@ const deleteGoal = asyncHandler(async (req, res) => {
   if (!spot) {
     res.status(400);
     throw new Error("Goal not found");
+  }
+
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    res.status(401);
+    throw new Error("User not found");
+  }
+
+  if (goal.user.toString() !== user.id) {
+    res.status(401);
+    throw new Error("User not matching");
   }
 
   await spot.remove();
